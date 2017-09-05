@@ -5,6 +5,8 @@ openresty-quickstart
 
 ## Getting Started
 
+/usr/local/openresty/nginx/sbin/nginx -p `pwd` -c conf/nginx.conf
+
 ```
 nginx -p <PWD> -c conf/nginx.conf
 ```
