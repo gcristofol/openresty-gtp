@@ -13,8 +13,8 @@ local format = string.format
 --[[
 #globals
 ]]
--- grab from environment
-local masterKey = "aEgL5VpsobIllPTHDK0XMmXZzzk5itw9lH5ZWizQAiTeunA0LyNMiHfV0dTKz7T71o656UFfMaaNaztH5yKXPw==";
+
+local masterKey = os.getenv ('COSMOSDB_MASTERKEY');
 
 local _date = os.date("!%a, %d %b %Y")
 local _time = os.date("!*t")
@@ -69,7 +69,7 @@ local function FetchDocumentById(documentId)
 	if res then
 		 value = cjson.decode(res.body)
 		 ngx.log(ngx.WARN, "retrieved value  " .. res.body )
-		 return value.authtoken
+		 return value.authtoken, value.clientSecret
 	end		
 end
 
@@ -87,13 +87,15 @@ ngx.log(ngx.WARN, "Document id header: ", documentId)
  end
 
 local memcache = ngx.shared.memcache
-local authtoken = memcache:get(documentId)
+local authtoken = memcache:get("authtoken" .. documentId)
 if authtoken == nil then
-	authtoken = FetchDocumentById(documentId)
+	authtoken, clientSecret = FetchDocumentById(documentId)
 	ngx.log(ngx.WARN, "Populate memcache with " .. documentId .. " document")
-	memcache:set(documentId, authtoken)
+	memcache:set("authtoken" .. documentId, authtoken)
+	memcache:set("clientSecret" .. documentId, clientSecret)
 else
 	ngx.log(ngx.WARN, "authtoken already in cache ")
 end
--- populate variable
+-- populate variables and headers
+ngx.req.set_header("MX-Api-Client-Secret", memcache:get("clientSecret" .. documentId))
 ngx.var.authtoken = authtoken
