@@ -4,7 +4,7 @@ Uses HMAC/sha256 to retrieve documents from Azure Cosmosdb
 ]]
 
 
-local hmac = require "resty.nettle.hmac"
+
 local gsub = string.gsub
 local byte = string.byte
 local format = string.format
